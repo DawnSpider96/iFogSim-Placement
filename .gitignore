@@ -1,6 +1,7 @@
 # The .idea folder files also can be added here if desired
 bin/
 /output/
+/dataset/simon/
 .classpath
 .settings/
 .project
