@@ -18,8 +18,8 @@ constants:
   usersLocationPath: "./dataset/usersLocation-dublin.csv"
   
   # GraphHopper/OSM configuration for Dublin
-  osmFilePath: "/home/dawn/repos/iFogSim-placement/dublin.osm.pbf"
-  graphHopperFolder: "/home/dawn/repos/iFogSim-placement/output/graphhopper_dublin"
+  osmFilePath: "./dublin.osm.pbf"
+  graphHopperFolder: "./output/graphhopper_dublin"
   
   # Event configurations (opera house coordinates would be different for Dublin)
   events:

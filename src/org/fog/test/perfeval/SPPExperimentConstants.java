@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public class SPPExperimentConstants {
     // Default values for optional fields
-    private static final String DEFAULT_OSM_FILE = "/home/dawn/repos/iFogSim-placement/melbourne.osm.pbf";
-    private static final String DEFAULT_GRAPH_FOLDER = "/home/dawn/repos/iFogSim-placement/output/graphhopper_melbourne";
+    private static final String DEFAULT_OSM_FILE = "./melbourne.osm.pbf";
+    private static final String DEFAULT_GRAPH_FOLDER = "./output/graphhopper_melbourne";
     
     // Location configuration
     private final String locationConfigFile;

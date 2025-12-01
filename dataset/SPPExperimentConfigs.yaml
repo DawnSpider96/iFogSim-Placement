@@ -18,8 +18,8 @@ constants:
   usersLocationPath: "./dataset/usersLocation-melbCBD_Experiments.csv"
   
   # GraphHopper/OSM configuration for realistic routing
-  osmFilePath: "/home/dawn/repos/iFogSim-placement/melbourne.osm.pbf"
-  graphHopperFolder: "/home/dawn/repos/iFogSim-placement/output/graphhopper_melbourne"
+  osmFilePath: "./melbourne.osm.pbf"
+  graphHopperFolder: "./output/graphhopper_melbourne"
   
   # Event configurations
   events:

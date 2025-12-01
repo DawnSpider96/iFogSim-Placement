@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Platform to run the OnlinePOC simulation under variable parameters:
@@ -158,8 +157,7 @@ public class SPPExperiment {
         // Initialize the CSV file with headers once at the beginning
         try (FileWriter fileWriter = new FileWriter(outputFile)) {
             fileWriter.append("Simulation,edges,users,UserType,services,Placement Logic,Avg Resource,Resource stddev,Avg Latency," + 
-                              "Latency stddev,Failure ratio,ExecutionTime_ms,PeakMemory_MB,BaselineMemory_MB,PostGCMemory_MB," + 
-                              "MemoryGrowth_MB,MemoryRetention_MB,CloudEnergy_Ws,DeviceEnergy_Ws,DeviceEnergyStdDev_Ws\n");
+                              "Latency stddev,Failure ratio,ExecutionTime_ms,CloudEnergy_Ws,DeviceEnergy_Ws,DeviceEnergyStdDev_Ws\n");
         } catch (IOException e) {
             System.err.println("Error creating output file: " + e.getMessage());
             e.printStackTrace();
@@ -174,58 +172,10 @@ public class SPPExperiment {
             // Create metrics object for this simulation
             PerformanceMetrics metrics = new PerformanceMetrics(config);
             
-            // Force garbage collection before starting to get baseline memory
-            System.gc();
-            System.runFinalization();
-            try {
-                Thread.sleep(5000); // Allow GC to complete
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            
-            // Measure baseline memory
-            long baselineMemoryBytes = getCurrentMemoryUsage();
-            metrics.setBaselineMemoryBytes(baselineMemoryBytes);
-            System.out.println("Baseline memory before simulation: " + (baselineMemoryBytes/1024/1024) + " MB");
-            
-            // Setup memory monitoring
-            AtomicLong peakMemoryBytes = new AtomicLong(0);
-            long pid = ProcessHandle.current().pid();
-            
-            Thread memoryMonitor = new Thread(() -> {
-                try {
-                    boolean running = true;
-                    while (running) {
-                        try {
-                            Path statusPath = Paths.get("/proc", Long.toString(pid), "status");
-                            List<String> lines = Files.readAllLines(statusPath);
-                            for (String line : lines) {
-                                if (line.startsWith("VmRSS:")) {
-                                    String[] parts = line.trim().split("\\s+");
-                                    long memoryKb = Long.parseLong(parts[1]);
-                                    long memoryBytes = memoryKb * 1024;
-                                    peakMemoryBytes.updateAndGet(prev -> Math.max(prev, memoryBytes));
-                                    break;
-                                }
-                            }
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            running = false;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            running = false;
-                        }
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-            
             // Initialize SPPMonitor for this simulation
             SPPMonitor.getInstance().initializeSimulation(simIndex);
             
-            // Start monitoring and timing
-            memoryMonitor.start();
+            // Start timing
             long startTime = System.currentTimeMillis();
             
             // Run the simulation
@@ -234,15 +184,6 @@ public class SPPExperiment {
             // Record metrics
             long endTime = System.currentTimeMillis();
             metrics.setExecutionTimeMs(endTime - startTime);
-            memoryMonitor.interrupt();
-            
-            try {
-                memoryMonitor.join(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            
-            metrics.setPeakMemoryBytes(peakMemoryBytes.get());
             
             // Process metrics from temporary CSV files
             processTempMetricsFiles(simIndex, metrics);
@@ -267,11 +208,7 @@ public class SPPExperiment {
             // Optional: Delete temporary files
             deleteTempFiles(simIndex);
             
-            System.out.println("Simulation completed in " + metrics.getExecutionTimeMs() + 
-                              " ms with peak memory usage of " + (metrics.getPeakMemoryBytes()/1024/1024) + " MB");
-            System.out.println("Memory after GC: " + (metrics.getPostGCMemoryBytes()/1024/1024) + " MB");
-            System.out.println("Memory growth during simulation: " + (metrics.getMemoryGrowthBytes()/1024/1024) + " MB");
-            System.out.println("Memory retained after GC: " + (metrics.getMemoryRetentionBytes()/1024/1024) + " MB");
+            System.out.println("Simulation completed in " + metrics.getExecutionTimeMs() + " ms");
         }
         
         // Print final entity ID information
@@ -410,26 +347,6 @@ public class SPPExperiment {
         }
     }
 
-    /**
-     * Helper method to get current memory usage
-     */
-    private static long getCurrentMemoryUsage() {
-        try {
-            long pid = ProcessHandle.current().pid();
-            Path statusPath = Paths.get("/proc", Long.toString(pid), "status");
-            List<String> lines = Files.readAllLines(statusPath);
-            for (String line : lines) {
-                if (line.startsWith("VmRSS:")) {
-                    String[] parts = line.trim().split("\\s+");
-                    long memoryKb = Long.parseLong(parts[1]);
-                    return memoryKb * 1024;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1; // Error case
-    }
 
     // Shared constants across all experiments (loaded from YAML)
     private static SPPExperimentConstants experimentConstants = null;
@@ -1359,13 +1276,6 @@ public class SPPExperiment {
                              ? String.valueOf(config.getAppLoopLength()) 
                              : "Legacy";
         
-        // Get memory metrics
-        long peakMemoryMB = metrics.getPeakMemoryBytes() / (1024 * 1024);
-        long baselineMemoryMB = metrics.getBaselineMemoryBytes() / (1024 * 1024);
-        long postGCMemoryMB = metrics.getPostGCMemoryBytes() / (1024 * 1024);
-        long memoryGrowthMB = metrics.getMemoryGrowthBytes() / (1024 * 1024);
-        long memoryRetentionMB = metrics.getMemoryRetentionBytes() / (1024 * 1024);
-        
         // Get proper user type specific metrics
         double utilizationAvg, utilizationStdDev, latencyAvg, latencyStdDev, failureRatio;
         int usersOfThisType = 0;
@@ -1397,7 +1307,7 @@ public class SPPExperiment {
         
         // Write the row
         writer.append(String.format(
-            "%d,%d,%d,%s,%s,%s,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%f,%f,%f\n",
+            "%d,%d,%d,%s,%s,%s,%f,%f,%f,%f,%f,%d,%f,%f,%f\n",
             simIndex,
             config.getNumberOfEdge(),
             usersOfThisType,
@@ -1410,11 +1320,6 @@ public class SPPExperiment {
             latencyStdDev,
             failureRatio,
             metrics.getExecutionTimeMs(),
-            peakMemoryMB,
-            baselineMemoryMB,
-            postGCMemoryMB,
-            memoryGrowthMB,
-            memoryRetentionMB,
             metrics.getCloudEnergyConsumption(),
             metrics.getAvgEdgeEnergyConsumption(),
             metrics.getStdDevEdgeEnergyConsumption()

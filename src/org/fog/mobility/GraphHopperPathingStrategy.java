@@ -18,7 +18,7 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
     private GraphHopper hopper;
 
     // Base path for resource files
-    private static final String BASE_PATH = "/home/dawn/repos/iFogSim-placement";
+    private static final String BASE_PATH = "./";
     
     // Map of area-specific OSM files
     private static final Map<String, String> AREA_OSM_FILES = new HashMap<>();
