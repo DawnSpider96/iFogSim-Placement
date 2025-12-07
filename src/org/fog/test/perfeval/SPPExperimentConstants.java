@@ -115,20 +115,11 @@ public class SPPExperimentConstants {
         this.useDynamicLocations = useDynamicLocations;
         this.osmFilePath = osmFilePath != null ? osmFilePath : DEFAULT_OSM_FILE;
         this.graphHopperFolder = graphHopperFolder != null ? graphHopperFolder : DEFAULT_GRAPH_FOLDER;
-        this.events = events != null ? events : createDefaultEvents();
+        this.events = events != null ? events : new HashMap<>();
         this.geographicArea = geographicArea;
         
         // Note: OSM file validation happens in SPPExperiment.validateOsmFileForMobileUsers()
         // after all configs are loaded, so we can check if mobile users are actually used
-    }
-    
-    /**
-     * Creates default event configuration (opera accident at 3600 seconds)
-     */
-    private static Map<String, EventConfig> createDefaultEvents() {
-        Map<String, EventConfig> defaultEvents = new HashMap<>();
-        defaultEvents.put("OPERA_ACCIDENT", new EventConfig("OPERA_ACCIDENT", 3600.0, null));
-        return defaultEvents;
     }
     
     // Getters

@@ -8,9 +8,9 @@ import java.util.Map;
 public class Config {
 
 	// Determines how often energy consumption is updated
-	public static final double RESOURCE_MGMT_INTERVAL = 1000;
-	public static int MAX_SIMULATION_TIME = 7200; // 5 hours, previously 2000
-	public static int CONTROLLER_RESOURCE_MANAGE_INTERVAL = 1000;
+	public static final double RESOURCE_MGMT_INTERVAL = 500;
+	public static int MAX_SIMULATION_TIME = 2000;
+	public static int CONTROLLER_RESOURCE_MANAGE_INTERVAL = 500;
 	public static String FOG_DEVICE_ARCH = "x86";
 	public static String FOG_DEVICE_OS = "Linux";
 	public static String FOG_DEVICE_VMM = "Xen";

@@ -25,7 +25,7 @@ constants:
   events:
     OPERA_ACCIDENT:
       type: "OPERA_ACCIDENT"
-      timestamp: 3600.0  # Occurs at 3600 seconds (1 hour) into simulation
+      timestamp: 1000.0  # Occurs at 1000 seconds into simulation
       parameters: null
 
 # ============================================================================
