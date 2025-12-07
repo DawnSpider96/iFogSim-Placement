@@ -172,14 +172,28 @@ public class LocationTest {
     
     @Test
     public void testRandomLocationDeterministic() {
-        // With same seed, should produce same location
-        Location loc1 = Location.getRandomLocation(12345L);
-        Location loc2 = Location.getRandomLocation(12345L);
+        // Set seed and get two locations
+        Location.setDefaultRandomSeed(12345L);
+        Location loc1 = Location.getRandomLocation();
+        Location loc2 = Location.getRandomLocation();
         
-        assertEquals("Same seed should produce same latitude", 
-                     loc1.latitude, loc2.latitude, 0.000001);
-        assertEquals("Same seed should produce same longitude", 
-                     loc1.longitude, loc2.longitude, 0.000001);
+        // Reset seed and get two more locations - should be same sequence
+        Location.setDefaultRandomSeed(12345L);
+        Location loc3 = Location.getRandomLocation();
+        Location loc4 = Location.getRandomLocation();
+        
+        assertEquals("Same seed should produce same first location (lat)", 
+                     loc1.latitude, loc3.latitude, 0.000001);
+        assertEquals("Same seed should produce same first location (lon)", 
+                     loc1.longitude, loc3.longitude, 0.000001);
+        assertEquals("Same seed should produce same second location (lat)", 
+                     loc2.latitude, loc4.latitude, 0.000001);
+        assertEquals("Same seed should produce same second location (lon)", 
+                     loc2.longitude, loc4.longitude, 0.000001);
+        
+        // But consecutive calls should produce DIFFERENT locations
+        assertFalse("Consecutive calls should produce different locations",
+                    loc1.latitude == loc2.latitude && loc1.longitude == loc2.longitude);
     }
     
     @Test
@@ -188,13 +202,40 @@ public class LocationTest {
         double centerLon = 144.9631;
         double radiusMeters = 500.0; // 500 meters
         
+        Location.setDefaultRandomSeed(42L);
         Location center = new Location(centerLat, centerLon, -1);
-        Location random = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters, 42L);
+        Location random = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters);
         
         double actualDistance = center.calculateDistance(random);
         
         assertTrue("Random location should be within specified radius", 
                    actualDistance <= (radiusMeters / 1000.0)); // Convert to km
+    }
+    
+    @Test
+    public void testRandomLocationWithinRadiusDeterministic() {
+        double centerLat = -37.8136;
+        double centerLon = 144.9631;
+        double radiusMeters = 500.0;
+        
+        // Get locations with seed
+        Location.setDefaultRandomSeed(42L);
+        Location loc1 = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters);
+        Location loc2 = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters);
+        
+        // Reset and get again - should be same sequence
+        Location.setDefaultRandomSeed(42L);
+        Location loc3 = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters);
+        Location loc4 = Location.getRandomLocationWithinRadius(centerLat, centerLon, radiusMeters);
+        
+        assertEquals("Same seed should produce same first location", 
+                     loc1.latitude, loc3.latitude, 0.000001);
+        assertEquals("Same seed should produce same second location", 
+                     loc2.latitude, loc4.latitude, 0.000001);
+        
+        // But consecutive calls should produce DIFFERENT locations
+        assertFalse("Consecutive calls should produce different locations",
+                    loc1.latitude == loc2.latitude && loc1.longitude == loc2.longitude);
     }
     
     @Test

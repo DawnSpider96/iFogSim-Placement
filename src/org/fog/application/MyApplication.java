@@ -1,14 +1,12 @@
 package org.fog.application;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.util.Pair;
 import org.fog.application.selectivity.SelectivityModel;
 import org.fog.scheduler.TupleScheduler;
 import org.fog.utils.FogUtils;
-import org.fog.utils.GeoCoverage;
 
 public class MyApplication extends Application {
 	

@@ -178,50 +178,41 @@ public class Location {
 		return longitude;
 	}
 
-	@Deprecated
-	public static Location getRandomLocationSmallbox() {
-		return getRandomLocationSmallbox(defaultRandomSeed);
-	}
-	
-	@Deprecated
-	public static Location getRandomLocationSmallbox(long seed) {
-		Random rand = new Random(seed);
-		double horizontalRatio = rand.nextDouble();
-		double verticalRatio = rand.nextDouble();
-		double width = BOUNDARY[1][0] - BOUNDARY[0][0];
-		double height = BOUNDARY[2][1] - BOUNDARY[0][1];
-		double newLatitude = BOUNDARY[0][0] + horizontalRatio * width;
-		double newLongitude = BOUNDARY[0][1] + verticalRatio * height;
-		return new Location(newLatitude, newLongitude, -1);
-	}
-
+	/**
+	 * Gets a random location within the boundary polygon.
+	 * Uses the persistent defaultRandom instance to generate different locations each call.
+	 * 
+	 * @return a random Location within the boundary
+	 */
 	public static Location getRandomLocation() {
-		return getRandomLocation(defaultRandomSeed);
-	}
-	
-	public static Location getRandomLocation(long seed) {
-		Random rand = new Random(seed);
+		// Use the persistent defaultRandom instance so each call generates a DIFFERENT location
 		while (true) {
-			double randLat = minLat + rand.nextDouble() * (maxLat - minLat);
-			double randLon = minLon + rand.nextDouble() * (maxLon - minLon);
+			double randLat = minLat + defaultRandom.nextDouble() * (maxLat - minLat);
+			double randLon = minLon + defaultRandom.nextDouble() * (maxLon - minLon);
 
 			if (isPointInPolygon(randLat, randLon, BOUNDARY)) {
 				return new Location(randLat, randLon, -1);
 			}
 		}
 	}
+	
 
+	/**
+	 * Gets a random location within a radius of a center point.
+	 * Uses the persistent defaultRandom instance to generate different locations each call.
+	 * 
+	 * @param centerLat center latitude
+	 * @param centerLon center longitude
+	 * @param radiusInMeters radius in meters
+	 * @return a random Location within the radius and boundary
+	 */
 	public static Location getRandomLocationWithinRadius(double centerLat, double centerLon, double radiusInMeters) {
-		return getRandomLocationWithinRadius(centerLat, centerLon, radiusInMeters, defaultRandomSeed);
-	}
-
-	public static Location getRandomLocationWithinRadius(double centerLat, double centerLon, double radiusInMeters, long seed) {
-		Random rand = new Random(seed);
+		// Use the persistent defaultRandom instance so each call generates a DIFFERENT location
 		final double radiusInDegrees = radiusInMeters / 111_000.0;
 
 		while (true) {
-			double distance = radiusInDegrees * Math.sqrt(rand.nextDouble());
-			double angle = rand.nextDouble() * 2 * Math.PI;
+			double distance = radiusInDegrees * Math.sqrt(defaultRandom.nextDouble());
+			double angle = defaultRandom.nextDouble() * 2 * Math.PI;
 
 			// Offset from center point
 			double offsetLat = distance * Math.cos(angle);
@@ -235,6 +226,7 @@ public class Location {
 			}
 		}
 	}
+
 
 
 	public static boolean isPointInPolygon(double testLat, double testLon, double[][] polygon) {

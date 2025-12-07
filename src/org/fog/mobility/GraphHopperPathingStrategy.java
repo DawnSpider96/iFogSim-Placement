@@ -23,14 +23,14 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
     // Map of area-specific OSM files
     private static final Map<String, String> AREA_OSM_FILES = new HashMap<>();
     static {
-        AREA_OSM_FILES.put("MELBOURNE", BASE_PATH + "/melbourne.osm.pbf");
-        AREA_OSM_FILES.put("DUBLIN", BASE_PATH + "/dublin.osm.pbf");
+        AREA_OSM_FILES.put("MELBOURNE", BASE_PATH + "melbourne.osm.pbf");
+        AREA_OSM_FILES.put("DUBLIN", BASE_PATH + "dublin.osm.pbf");
         // Add more areas as needed
     }
 
     // Configuration parameters
     private String osmFileLocation = AREA_OSM_FILES.get("MELBOURNE"); // Default
-    private String graphFolderFiles = BASE_PATH + "/output/graphhopper_melbourne"; // Default
+    private String graphFolderFiles = BASE_PATH + "output/graphhopper_melbourne"; // Default
     private String movementType = "car";  // Default vehicle profile name
     private String navigationalType = "custom";  // Default weighting. Used to be "fastest"
     private String blockedAreas = null;
@@ -90,7 +90,7 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
         }
         
         // Set graph folder based on area
-        graphFolderFiles = BASE_PATH + "/output/graphhopper_" + area.toLowerCase();
+        graphFolderFiles = BASE_PATH + "output/graphhopper_" + area.toLowerCase();
         
         System.out.println("GraphHopper settings updated for area: " + area);
         System.out.println("OSM file: " + osmFileLocation);
@@ -118,6 +118,16 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
 
     private void init() {
         if (hopper != null) return;
+        
+        // Verify OSM file exists
+        File osmFile = new File(osmFileLocation);
+        if (!osmFile.exists()) {
+            System.err.println("ERROR: OSM file not found: " + osmFileLocation);
+            System.err.println("GraphHopper will fail to route. Please ensure the OSM file exists at this path.");
+            // Don't throw exception here - let GraphHopper fail and use fallback paths
+        } else {
+            System.out.println("OSM file verified: " + osmFileLocation + " (" + osmFile.length() / (1024 * 1024) + " MB)");
+        }
         
         // Create graph folder if it doesn't exist
         File graphFolder = new File(graphFolderFiles);
@@ -215,6 +225,11 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
             }
 
             ResponsePath route = rsp.getBest();
+            if (route == null) {
+                System.err.println("GraphHopper returned null route, using fallback path");
+                return createFallbackPath(currentLocation, destination, speedKmps);
+            }
+            
             if (allowAlternativeRoutes && rsp.getAll().size() > 1
                     && rand.nextDouble() <= probabilityForAlternativeRoute) {
                 int altIdx = rand.nextInt(rsp.getAll().size() - 1) + 1;
@@ -223,6 +238,11 @@ public class GraphHopperPathingStrategy extends AbstractPathingStrategy {
 
             // NOTE: Both start and end point is snapped to nearest road by graphhopper.
             PointList points = route.getPoints();
+            if (points == null || points.isEmpty()) {
+                System.err.println("GraphHopper returned empty PointList, using fallback path");
+                return createFallbackPath(currentLocation, destination, speedKmps);
+            }
+            
             double totalDistanceKm = route.getDistance() * Consts.METERS_TO_KM;
             path = createWaypointsFromPointList(points, totalDistanceKm, speedKmps, currentLocation);
         } catch (Exception e) {

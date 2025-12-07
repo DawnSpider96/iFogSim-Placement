@@ -526,7 +526,30 @@ public class PlacementSimulationController extends SimEntity {
         if (delay > 0) {
             send(getId(), delay, FogEvents.SCHEDULER_NEXT_MOVEMENT_UPDATE, deviceId);
         }
-        else Logger.error("Delay WARNING", "This " + mobilityState + " user is NOT scheduled to move again. Check that user will call makePath in future.");
+        else {
+            // Check if this is expected behavior (ambulance waiting for emergency, immobile user, etc.)
+            boolean isExpectedStationary = false;
+            String reason = "";
+            
+            if (mobilityState instanceof AmbulanceUserMobilityState) {
+                AmbulanceUserMobilityState ambulanceState = (AmbulanceUserMobilityState) mobilityState;
+                if (ambulanceState.getStatus() == AmbulanceUserMobilityState.AmbulanceUserStatus.WAITING_FOR_EMERGENCY) {
+                    isExpectedStationary = true;
+                    reason = "Ambulance waiting for emergency event";
+                }
+            } else if (mobilityState instanceof ImmobileUserMobilityState) {
+                isExpectedStationary = true;
+                reason = "Immobile user (stationary by design)";
+            }
+            
+            if (isExpectedStationary) {
+                Logger.debug("Mobility Info", reason + " - device " + CloudSim.getEntityName(deviceId) + " will move later or remain stationary");
+            } else {
+                Logger.error("Delay WARNING", "Device " + CloudSim.getEntityName(deviceId) + 
+                    " (" + mobilityState.getClass().getSimpleName() + ") is NOT scheduled to move. " +
+                    "Check that user will call makePath in future or verify this is intentional.");
+            }
+        }
     }
     
     /**

@@ -122,7 +122,25 @@ public class FullMobilityStrategy implements MobilityStrategy {
             System.out.println("Created new path for device " + deviceId + ", first movement at " + arrivalTime);
             return delay;
         } else {
-            Logger.error("WARNING: Empty Path", "Check if stationary ambulance/opera user.");
+            // Check if this is expected behavior for certain user types
+            if (dms instanceof org.fog.mobility.AmbulanceUserMobilityState) {
+                Enum<?> status = dms.getStatus();
+                if (status == org.fog.mobility.AmbulanceUserMobilityState.AmbulanceUserStatus.WAITING_FOR_EMERGENCY) {
+                    // This is expected - ambulance users wait for the emergency event before moving
+                    Logger.debug("Ambulance User", "Ambulance user waiting for emergency event - empty path is expected");
+                    return -1.0;
+                }
+            }
+            
+            if (dms instanceof org.fog.mobility.ImmobileUserMobilityState) {
+                Logger.debug("Immobile User", "Immobile user - empty path is expected (stationary by design)");
+                return -1.0;
+            }
+            
+            // For unexpected cases, log a more informative warning
+            Logger.error("WARNING: Empty Path", "Device " + CloudSim.getEntityName(deviceId) + 
+                " (" + dms.getClass().getSimpleName() + ", status: " + dms.getStatus() + ") created an empty path. " +
+                "Verify this is intentional or check path generation logic.");
             return -1.0;
         }
     }

@@ -117,8 +117,7 @@ public class OperaUserMobilityState extends DeviceMobilityState {
             Location evacLocation = Location.getRandomLocationWithinRadius(
                     operaHouse.getLatitude(),
                     operaHouse.getLongitude(),
-                    randomDistance,
-                    strategy.getSeed()
+                    randomDistance
             );
             
             this.currentAttractor = new Attractor(
