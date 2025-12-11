@@ -19,7 +19,14 @@ iFogSim-Placement extends the newest version of [iFogSim](https://github.com/Clo
 
 ### Installation
 
-2. **Install Dependencies**: Use the Maven wrapper to install all required packages:
+2. **Clone this repository to desired folder**
+```
+git clone https://github.com/DawnSpider96/iFogSim-Placement
+```
+
+3. **Install Dependencies** (in the repository's root directory)
+This repository uses Maven for package management.
+Run the following to use the Maven wrapper (which installs all packages):
    - **On macOS/Linux**:
      ```bash
      ./mvnw clean install
@@ -31,47 +38,24 @@ iFogSim-Placement extends the newest version of [iFogSim](https://github.com/Clo
 
 ### Running the Simulation
 
-3. **Run the Main Simulation**: Execute the simulation using the Maven wrapper:
+4. **Run a Service Placement Scenario**: This framework includes three main scenarios to get started:
+
+   | Scenario | Description | Command |
+   |----------|-------------|---------|
+   | `SPPExperiment` | Main research platform with YAML-based configuration | `./mvnw exec:java` |
+   | `OnlinePOC` | Online placement with periodic requests | `./mvnw exec:java -Dexec.mainClass="org.fog.test.perfeval.OnlinePOC"` |
+   | `MobilityPOC` | Mobility framework demonstration | `./mvnw exec:java -Dexec.mainClass="org.fog.test.mobility.MobilityPOC"` |
+
+   For example, to run the main research platform:
    ```bash
    ./mvnw exec:java 2>&1 | tee output/SPPExperiment.txt
    ```
-   
-   **Note**: The main class is configured in `pom.xml` to be `org.fog.test.perfeval.SPPExperiment`. If you want to run a different file, you can specify it in the command:
-   ```bash
-   ./mvnw exec:java -Dexec.mainClass="org.fog.test.perfeval.OnlinePOC" 2>&1 | tee output/OnlinePOC.txt
-   ```
 
-## Quick Start
-* Eclipse IDE:
-  * Create a Java project
-  * Inside the project directory, initialize an empty Git repository with the following command:
-  ```
-  git init
-  ```
-  * Add the Git repository of iFogSim2 as the `origin` remote:
-  ```
-  git remote add origin https://github.com/DawnSpider96/iFogSim-Placement
-  ```
-  * Pull the contents of the repository to your machine:
-  ```
-  git pull origin main
-  ```
-  * Include the JARs to your project  
-  * Run the example files (e.g. TranslationServiceFog_Clustering.java, CrowdSensing_Microservices_RandomMobility_Clustering.java) to get started
-
-* IntelliJ IDEA:
-  * Clone the iFogSim-Placement Git repository to desired folder:
-  ```
-  git clone https://github.com/DawnSpider96/iFogSim-Placement
-  ```
-  * Select "project from existing resources" from the "File" drop-down menu
-  * Verify the Java version
-  * Verify the external libraries in the "JARs" Folder are added to the project
-  * Run the example files (e.g. TranslationServiceFog_Clustering.java, CrowdSensing_Microservices_RandomMobility_Clustering.java) to get started
+   **Already have Maven installed?** If you have Maven 3.6.3+ installed, you can replace `./mvnw` with `mvn` in all commands.
 
 ## Service Placement Scenarios
 
-The next steps are required to run service placement experiments:
+Each scenario is explained in detail below:
 
 ### 1. SPPExperiment - Main Research Platform
 
@@ -113,14 +97,12 @@ The next steps are required to run service placement experiments:
 1. **Configure your experiment** in `./dataset/SPPExperimentConfigs.yaml`
 2. **Run the simulation**:
    ```bash
-   java -cp .:jars/* org.fog.test.perfeval.SPPExperiment
+   ./mvnw exec:java 2>&1 | tee output/SPPExperiment.txt
    ```
-3. **View results** in `./output/MiH_4_0_Melbourne.csv`
+3. **View results** in `./output/MiH_Melbourne.csv`
 
-#### Available Configuration Files:
+#### Available Configuration Files (Feel free to make your own):
 - `./dataset/SPPExperimentConfigs.yaml` - Main experiment configurations
-- `./dataset/PerformanceEvalConfigsUsers.yaml` - User-focused performance evaluation
-- `./dataset/PerformanceEvalConfigsEdges.yaml` - Edge server-focused evaluation
 
 ### 2. OnlinePOC - Online Placement Proof of Concept
 
@@ -134,7 +116,7 @@ The next steps are required to run service placement experiments:
 
 #### Usage:
 ```bash
-java -cp .:jars/* org.fog.test.perfeval.OnlinePOC
+./mvnw exec:java -Dexec.mainClass="org.fog.test.perfeval.OnlinePOC"
 ```
 
 ### 3. MobilityPOC - Mobility Framework Proof of Concept
@@ -149,7 +131,7 @@ java -cp .:jars/* org.fog.test.perfeval.OnlinePOC
 
 #### Usage:
 ```bash
-java -cp .:jars/* org.fog.test.mobility.MobilityPOC
+./mvnw exec:java -Dexec.mainClass="org.fog.test.mobility.MobilityPOC"
 ```
 
 ## Configuration Options
@@ -215,7 +197,7 @@ To add new parameters to the YAML configuration:
 ### Common Issues:
 1. **Memory Issues**: Large simulations may require increased heap size:
    ```bash
-   java -Xmx8g -cp .:jars/* org.fog.test.perfeval.SPPExperiment
+   MAVEN_OPTS="-Xmx8g" ./mvnw exec:java
    ```
 
 2. **CSV File Not Found**: Ensure location data files exist in `./dataset/`
