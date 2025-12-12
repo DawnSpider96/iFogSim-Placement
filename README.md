@@ -19,7 +19,7 @@ iFogSim-Placement extends the newest version of [iFogSim](https://github.com/Clo
 
 ### Installation
 
-2. **Clone this repository to desired folder. If you are in the anonymised GitHub repository, please download the repository from [here](https://anonymous.4open.science/api/repo/iFogSim-Placement-C94E/zip){:target="_blank"}. You will need to unzip the downloaded file to continue with the installation below.**
+2. **Clone this repository to desired folder. If you are in the anonymised GitHub repository, please download the repository from <a href="https://anonymous.4open.science/api/repo/iFogSim-Placement-C94E/zip" target="_blank">here</a>. You will need to unzip the downloaded file to continue with the installation below.**
     ```bash
     git clone https://github.com/DawnSpider96/iFogSim-Placement
     ```
