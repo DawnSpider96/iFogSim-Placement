@@ -29,6 +29,7 @@ This repository uses Maven for package management.
 Run the following to use the Maven wrapper (which installs all packages):
    - **On macOS/Linux**:
      ```bash
+     chmod +x ./mvnw
      ./mvnw clean install
      ```
    - **On Windows**:
