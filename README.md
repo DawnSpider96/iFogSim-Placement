@@ -20,9 +20,9 @@ iFogSim-Placement extends the newest version of [iFogSim](https://github.com/Clo
 ### Installation
 
 2. **Clone this repository to desired folder**
-  ```bash
-  git clone https://github.com/DawnSpider96/iFogSim-Placement
-  ```
+    ```bash
+    git clone https://github.com/DawnSpider96/iFogSim-Placement
+    ```
 
 3. **Install Dependencies** (in the repository's root directory)
 This repository uses Maven for package management.
